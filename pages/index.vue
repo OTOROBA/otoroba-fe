@@ -1,4 +1,12 @@
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth', // middleware/auth.ts をこのページで有効にする
+  requiresAuth: true, // 保護が必要なページである目印
+});
+
+const user = useSupabaseUser(); // ログイン中のユーザー情報を取得
+
 import { ref, onMounted, watch, watchEffect, nextTick } from 'vue';
 // LeafletのCSSはトップレベルでインポート
 import 'leaflet/dist/leaflet.css';
@@ -113,10 +121,13 @@ const initMap = () => {
     map = L.map(mapContainer.value).setView(initialPosition, 13);
     console.log('[KENTA_DEBUG] initMap - Map initialized. Instance:', map);
 
-    L.tileLayer('https://tile.openstreetmap.jp/styles/maptiler-basic-ja/{z}/{x}/{y}.png', {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
+    L.tileLayer(
+      'https://tile.openstreetmap.jp/styles/maptiler-basic-ja/{z}/{x}/{y}.png',
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }
+    ).addTo(map);
     console.log('[KENTA_DEBUG] initMap - TileLayer added.');
 
     if (selectedStore.value) {
