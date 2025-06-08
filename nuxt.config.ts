@@ -11,14 +11,13 @@ export default defineNuxtConfig({
       callback: '/confirm',    // OAuth認証後のコールバック処理を行うページ
       exclude: ['/register'],  // リダイレクト保護から除外するパス (正規表現も可)
     },
-    // clientOptions: { // Supabase JS Client のオプション
-    //   auth: {
-    //     flowType: 'pkce',
-    //     detectSessionInUrl: true,
-    //     persistSession: true,
-    //     autoRefreshToken: true
-    //   },
-    // }
+    clientOptions: { // Supabase JS Client のオプション
+      auth: {
+        detectSessionInUrl: true,
+        persistSession: true,
+        autoRefreshToken: true
+      },
+    }
   },
   devtools: { enabled: true } // Nuxt Devtools (任意)
 })
