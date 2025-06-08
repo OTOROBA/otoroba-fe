@@ -15,9 +15,12 @@ export default defineNuxtConfig({
       auth: {
         detectSessionInUrl: true,
         persistSession: true,
-        autoRefreshToken: true
+        autoRefreshToken: true,
       },
-    }
+    },
+    cookieOptions: {
+      secure: process.env.NODE_ENV === 'production',
+    },
   },
   devtools: { enabled: true } // Nuxt Devtools (任意)
 })

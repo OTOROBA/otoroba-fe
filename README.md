@@ -35,6 +35,8 @@ SUPABASE_KEY="your-supabase-anon-key"
 
 Google provider must be enabled in Supabase and the callback URL should point to `/confirm`.
 
+When testing locally over plain HTTP, the Supabase auth cookie must allow non-secure transmission. `nuxt.config.ts` automatically sets this for development.
+
 ## Development Server
 
 Start the development server on `http://localhost:3000`:
