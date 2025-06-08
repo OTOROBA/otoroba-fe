@@ -20,6 +20,21 @@ yarn install
 bun install
 ```
 
+Copy `.env.sample` to `.env` and set your Supabase project credentials. These environment variables are required for Google login to work:
+
+```bash
+cp .env.sample .env
+```
+
+Edit `.env` and provide your Supabase URL and anon key:
+
+```
+SUPABASE_URL="your-supabase-url"
+SUPABASE_KEY="your-supabase-anon-key"
+```
+
+Google provider must be enabled in Supabase and the callback URL should point to `/confirm`.
+
 ## Development Server
 
 Start the development server on `http://localhost:3000`:
