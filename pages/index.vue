@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 definePageMeta({
   middleware: 'auth', // middleware/auth.ts をこのページで有効にする
   requiresAuth: true, // 保護が必要なページである目印
@@ -67,51 +66,21 @@ const defaultIconOptions: IconOptions = {
 
 // onMounted は L のロードのみに専念
 onMounted(async () => {
-  console.log('[KENTA_DEBUG] onMounted - Component mounted.');
   if (process.client) {
-    console.log(
-      '[KENTA_DEBUG] onMounted - process.client is true. Importing Leaflet.'
-    );
     L = await import('leaflet');
-    console.log('[KENTA_DEBUG] onMounted - Leaflet imported:', L);
-  } else {
-    console.log('[KENTA_DEBUG] onMounted - process.client is false.');
   }
 });
 
 // watchEffect を使って、L と mapContainer.value が揃ったら地図を初期化
 watchEffect(() => {
-  console.log('[KENTA_DEBUG] watchEffect triggered.');
-  console.log('[KENTA_DEBUG] watchEffect - L:', L ? 'Loaded' : 'Not Loaded');
-  console.log(
-    '[KENTA_DEBUG] watchEffect - mapContainer.value:',
-    mapContainer.value ? 'Available' : 'Not Available'
-  );
-  console.log(
-    '[KENTA_DEBUG] watchEffect - map (before init):',
-    map ? 'Initialized' : 'Not Initialized'
-  );
-
   if (process.client && L && mapContainer.value && !map) {
     // mapがまだ初期化されていない場合のみ
-    console.log('[KENTA_DEBUG] watchEffect - Conditions met, calling initMap.');
     initMap();
-  } else if (!process.client) {
-    console.log('[KENTA_DEBUG] watchEffect - Not on client.');
-  } else if (!L) {
-    console.log('[KENTA_DEBUG] watchEffect - L is not yet loaded.');
-  } else if (!mapContainer.value) {
-    console.log(
-      '[KENTA_DEBUG] watchEffect - mapContainer.value is not yet available.'
-    );
-  } else if (map) {
-    console.log('[KENTA_DEBUG] watchEffect - Map already initialized.');
   }
 });
 
 // 地図の初期化関数
 const initMap = () => {
-  console.log('[KENTA_DEBUG] initMap called.');
   // L と mapContainer.value のチェックは watchEffect で既に行われているが、念のためここでも確認
   if (L && mapContainer.value && !map) {
     const initialPosition: LatLngExpression = selectedStore.value
@@ -119,7 +88,6 @@ const initMap = () => {
       : [35.6895, 139.6917]; // デフォルトは東京駅あたり
 
     map = L.map(mapContainer.value).setView(initialPosition, 13);
-    console.log('[KENTA_DEBUG] initMap - Map initialized. Instance:', map);
 
     L.tileLayer(
       'https://tile.openstreetmap.jp/styles/maptiler-basic-ja/{z}/{x}/{y}.png',
@@ -128,51 +96,27 @@ const initMap = () => {
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }
     ).addTo(map);
-    console.log('[KENTA_DEBUG] initMap - TileLayer added.');
 
     if (selectedStore.value) {
-      console.log(
-        '[KENTA_DEBUG] initMap - selectedStore has value, calling updateMapMarker.'
-      );
       updateMapMarker(selectedStore.value);
-    } else {
-      console.log(
-        '[KENTA_DEBUG] initMap - selectedStore is null, no initial marker.'
-      );
     }
 
     // 地図のサイズが正しく認識されない場合への対策
     map.invalidateSize();
-    console.log('[KENTA_DEBUG] initMap - map.invalidateSize() called.');
   } else {
-    console.warn(
-      '[KENTA_DEBUG] initMap - Conditions NOT MET or map already initialized.',
-      'L exists:',
-      !!L,
-      'mapContainer exists:',
-      !!mapContainer.value,
-      'map already initialized:',
-      !!map
-    );
+    // 条件を満たさない場合は何もしない
   }
 };
 
 // 地図上のマーカーを更新する関数
 const updateMapMarker = (store: { name: string; lat: number; lng: number }) => {
-  console.log('[KENTA_DEBUG] updateMapMarker called with:', store);
   if (L && map) {
     // L と map が利用可能であることを確認
-    console.log('[KENTA_DEBUG] updateMapMarker - L and map are available.');
     const position: LatLngExpression = [store.lat, store.lng];
     map.setView(position, 15); // 選択された店舗にズームして中心を移動
-    console.log(
-      '[KENTA_DEBUG] updateMapMarker - map.setView called to:',
-      position
-    );
 
     // 既存のマーカーがあれば削除
     if (marker) {
-      console.log('[KENTA_DEBUG] updateMapMarker - Removing existing marker.');
       marker.remove();
     }
     // 新しいマーカーを作成して追加
@@ -181,18 +125,8 @@ const updateMapMarker = (store: { name: string; lat: number; lng: number }) => {
       .addTo(map)
       .bindPopup(store.name)
       .openPopup(); // ポップアップを最初から開く
-    console.log(
-      '[KENTA_DEBUG] updateMapMarker - New marker added and popup opened at:',
-      position
-    );
   } else {
-    console.error(
-      '[KENTA_DEBUG] updateMapMarker - L or map is NOT available!',
-      'L:',
-      L ? 'Loaded' : 'Not Loaded',
-      'map:',
-      map ? 'Initialized' : 'Not Initialized'
-    );
+    console.error('Leaflet not initialized when trying to update map marker');
   }
 };
 
@@ -203,40 +137,22 @@ const selectStore = (store: {
   lat: number;
   lng: number;
 }) => {
-  console.log('[KENTA_DEBUG] selectStore called with:', store);
   selectedStoreId.value = store.id;
   selectedStore.value = store;
-  console.log('[KENTA_DEBUG] selectedStore.value is now:', selectedStore.value);
 };
 
 // selectedStore が変更されたら地図を更新
 watch(selectedStore, (newStore, oldStore) => {
-  console.log(
-    '[KENTA_DEBUG] watch selectedStore triggered. New:',
-    newStore,
-    'Old:',
-    oldStore
-  );
-  console.log(
-    '[KENTA_DEBUG] watch - Map instance:',
-    map ? 'Initialized' : 'Not Initialized'
-  );
-  console.log('[KENTA_DEBUG] watch - L instance:', L ? 'Loaded' : 'Not Loaded');
   if (newStore) {
     // mapが初期化されてからマーカーを更新する
     if (map) {
       updateMapMarker(newStore);
     } else {
-      console.warn(
-        '[KENTA_DEBUG] watch - Map not yet initialized when trying to update marker for newStore.'
-      );
+      console.warn('Map not yet initialized when trying to update marker');
       // ここで map が初期化されるのを待つか、initMap 側で selectedStore を見てマーカーを出すようにする（現在はそうなっている）
     }
   } else if (map && marker) {
     // newStoreがnull（選択解除など）で、かつmapとmarkerが存在する場合
-    console.log(
-      '[KENTA_DEBUG] watch - Removing marker because newStore is null.'
-    );
     marker.remove();
     marker = null;
   }

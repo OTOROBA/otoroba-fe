@@ -3,21 +3,18 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted } from 'vue';
 
-const user = useSupabaseUser()
-const router = useRouter()
+const supabase = useSupabaseClient();
+const router = useRouter();
 
 // onMountedフックを使うことで、この中の処理は
 // 必ずブラウザ側（クライアントサイド）でページが表示された後に実行されます。
 onMounted(() => {
-  // ユーザーの状態を監視
-  watch(user, (newUser) => {
-    // ユーザー情報が取得できたら（セッションが確立されたら）
-    if (newUser) {
-      // ホームページへリダイレクト
-      router.push('/')
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      router.push('/');
     }
-  }, { immediate: true }) // 監視開始と同時に初回チェックを実行
-})
+  });
+});
 </script>
